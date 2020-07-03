@@ -1,0 +1,105 @@
+---
+title: "Data coding experience"
+author: "Steph B"
+date: "16/04/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Data coding experience
+
+
+## Cleaning up our data 
+
+```{r}
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+
+# read in data 
+classes_teachers <- read.xlsx("Excel/ClassesTeachers2019.xlsx")
+
+# look at data 
+head(classes_teachers)
+dim(classes_teachers)
+names(classes_teachers)
+view(classes_teachers)
+
+# rename my variable names 
+classes_teachers <- clean_names(classes_teachers)
+names(classes_teachers)
+
+```
+
+
+# Data wrangling 
+
+Now we're going to start answering our question. 
+
+Q1: How many classes does each department teach? 
+
+
+```{r}
+num_classes_each_department <- classes_teachers %>%
+  group_by(department) %>%
+  summarise(number_of_classes = n()) %>%
+  arrange(desc(number_of_classes))
+  
+num_classes_each_department
+```
+
+
+
+```{r}
+num_classes_each_department %>%
+  ggplot(aes(x = department, y = number_of_classes)) + 
+  geom_col(fill = "dodgerblue") + 
+  xlab("\n Department") + ylab("Number of classes \n") + 
+  ggtitle("Number of classes per department") + 
+  theme(axis.text.x = element_text(angle = 90))
+  
+```
+
+
+# Question 2 
+
+How many classes does each teacher teach?
+
+```{r}
+classes_teachers
+unique(classes_teachers$last_name)
+
+num_classes_each_teacher <- classes_teachers %>%
+  group_by(first_name, last_name, department) %>%
+  summarise(number_of_classes = n()) %>%
+  arrange(desc(number_of_classes))
+
+num_classes_each_teacher
+```
+
+
+Plot the data 
+
+```{r, echo=FALSE}
+
+plot_classes_teacher <- num_classes_each_teacher %>%
+  ggplot(aes(x = reorder(last_name, desc(number_of_classes)), y = number_of_classes)) + 
+  geom_col(fill = "dodgerblue") + 
+  scale_y_continuous(breaks = c(0,2,4,6)) + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  facet_wrap(~ department, scale = "free_x")
+
+
+plot_classes_teacher
+#ggsave("classes_per_teacher.png")
+```
+
+
+
+
+
+
